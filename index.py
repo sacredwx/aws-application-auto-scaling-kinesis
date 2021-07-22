@@ -13,6 +13,9 @@ AUTOSCALINGPOLICYOUT_ARN = ''
 AUTOSCALINGPOLICYIN_ARN = ''
 CLOUDWATCHALARMNAMEOUT = os.environ['CloudWatchAlarmNameOut']
 CLOUDWATCHALARMNAMEIN = os.environ['CloudWatchAlarmNameIn']
+CLOUDWATCHALARMNAMEOUT2 = os.environ['CloudWatchAlarmNameOut2']
+CLOUDWATCHALARMNAMEIN2 = os.environ['CloudWatchAlarmNameIn2']
+CLOUDWATCHALARMNAMEOUT3 = os.environ['CloudWatchAlarmNameOut3']
 
 
 def update_shards(desiredCapacity, resourceName):
@@ -41,12 +44,10 @@ def update_shards(desiredCapacity, resourceName):
     return scalingStatus
 
 
-# fuction to update scale out alarm threshol
+# fuction to update scale out alarm threshold
 def update_alarm_out(shards, stream):
-    # assuming alarm will fire at 80% of incoming records
-    new_threshold = (1000 * shards * 60)*80/100
     try:
-        set_alarm = client_cloudwatch.put_metric_alarm(
+        client_cloudwatch.put_metric_alarm(
             AlarmName=CLOUDWATCHALARMNAMEOUT,
             AlarmDescription='incomingRecord exceeds threshold',
             MetricName='IncomingRecords',
@@ -60,12 +61,33 @@ def update_alarm_out(shards, stream):
             Statistic='Sum',
             Period=60,
             EvaluationPeriods=1,
-            Threshold=new_threshold,
+            Threshold=(1000 * shards * 60)*80/100,
             ComparisonOperator='GreaterThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYOUT_ARN
             ]
         )
+        client_cloudwatch.put_metric_alarm(
+            AlarmName=CLOUDWATCHALARMNAMEOUT2,
+            AlarmDescription='IncomingBytes exceeds threshold',
+            MetricName='IncomingBytes',
+            Namespace='AWS/Kinesis',
+            Dimensions=[
+                {
+                    'Name': 'StreamName',
+                    'Value': stream
+                }
+            ],
+            Statistic='Sum',
+            Period=60,
+            EvaluationPeriods=1,
+            Threshold=(1000000 * shards * 60)*80/100,
+            ComparisonOperator='GreaterThanThreshold',
+            AlarmActions=[
+                AUTOSCALINGPOLICYOUT_ARN
+            ]
+        )
+        # WriteProvisionedThroughputExceeded does not need a threshold update
     except Exception as e:
         print(e)
 
@@ -73,10 +95,8 @@ def update_alarm_out(shards, stream):
 
 
 def update_alarm_in(shards, stream):
-    # assuming alarm will fire at 80% of incoming records
-    new_threshold = (1000 * (shards-1) * 60)*80/100
     try:
-        set_alarm = client_cloudwatch.put_metric_alarm(
+        client_cloudwatch.put_metric_alarm(
             AlarmName=CLOUDWATCHALARMNAMEIN,
             AlarmDescription='incomingRecord below threshold',
             MetricName='IncomingRecords',
@@ -90,7 +110,27 @@ def update_alarm_in(shards, stream):
             Statistic='Sum',
             Period=300,
             EvaluationPeriods=3,
-            Threshold=new_threshold,
+            Threshold=(1000 * (shards-1) * 60)*80/100,
+            ComparisonOperator='LessThanThreshold',
+            AlarmActions=[
+                AUTOSCALINGPOLICYIN_ARN
+            ]
+        )
+        client_cloudwatch.put_metric_alarm(
+            AlarmName=CLOUDWATCHALARMNAMEIN2,
+            AlarmDescription='IncomingBytes below threshold',
+            MetricName='IncomingBytes',
+            Namespace='AWS/Kinesis',
+            Dimensions=[
+                {
+                    'Name': 'StreamName',
+                    'Value': stream
+                }
+            ],
+            Statistic='Sum',
+            Period=300,
+            EvaluationPeriods=3,
+            Threshold=(1000000 * (shards-1) * 60)*80/100,
             ComparisonOperator='LessThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYIN_ARN
@@ -151,7 +191,10 @@ def autoscaling_policy_arn(context):
                 'AutoScalingPolicyIn': AutoScalingPolicyIn,
                 'ParameterStore': PARAMETER_STORE,
                 'CloudWatchAlarmNameOut': CLOUDWATCHALARMNAMEOUT,
-                'CloudWatchAlarmNameIn': CLOUDWATCHALARMNAMEIN
+                'CloudWatchAlarmNameIn': CLOUDWATCHALARMNAMEIN,
+                'CloudWatchAlarmNameOut2': CLOUDWATCHALARMNAMEOUT2,
+                'CloudWatchAlarmNameIn2': CLOUDWATCHALARMNAMEIN2,
+                'CloudWatchAlarmNameOut3': CLOUDWATCHALARMNAMEOUT3
             }
         }
     )

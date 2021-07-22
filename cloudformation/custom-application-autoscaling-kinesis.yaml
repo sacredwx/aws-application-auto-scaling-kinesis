@@ -17,6 +17,18 @@ Parameters:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale in
     Default: IncomingRecords-alarm-in
+  CloudWatchAlarmNameOut2:
+    Type: String
+    Description: 2 Alarm name for CloudWatch Alarm scale out
+    Default: IncomingBytes-alarm-out
+  CloudWatchAlarmNameIn2:
+    Type: String
+    Description: 2 Alarm name for CloudWatch Alarm scale in
+    Default: IncomingBytes-alarm-in
+  CloudWatchAlarmNameOut3:
+    Type: String
+    Description: 3 Alarm name for CloudWatch Alarm scale out
+    Default: WriteProvisionedThroughputExceeded-alarm-out
   ShardCount:
     Type: String
     Description: Number of initial shards
@@ -69,6 +81,9 @@ Resources:
                 Resource: 
                   - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameIn']]
                   - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut']]
+                  - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameIn2']]
+                  - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut2']]
+                  - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut3']]
         - 
           PolicyName: 'API-Invoke'
           PolicyDocument: 
@@ -124,12 +139,18 @@ Resources:
               Resource: 
                 - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameIn']]
                 - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut']]
+                - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameIn2']]
+                - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut2']]
+                - !Join ['', ['arn:aws:cloudwatch:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':alarm:', !Ref 'CloudWatchAlarmNameOut3']]
 
       Environment:
         Variables:
           ParameterStore: !Ref KinesisDesiredCapacityParameter
           CloudWatchAlarmNameIn: !Ref CloudWatchAlarmNameIn
           CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut
+          CloudWatchAlarmNameIn: !Ref CloudWatchAlarmNameIn2
+          CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut2
+          CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut3
       Events:
         KinesisAPI:
           Type: Api
@@ -294,6 +315,66 @@ Resources:
       ComparisonOperator: 'LessThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyIn
+  
+  CWAlarmOut2:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: MyKinesisStream
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameOut2
+      AlarmDescription: 'IncomingBytes exceeds threshold'
+      MetricName: 'IncomingBytes'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref MyKinesisStream
+      Statistic: 'Sum'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1000000
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyOut
+
+  CWAlarmIn2:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: MyKinesisStream
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameIn2
+      AlarmDescription: 'IncomingBytes below threshold'
+      MetricName: 'IncomingBytes'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref MyKinesisStream
+      Statistic: 'Sum'
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 700000
+      ComparisonOperator: 'LessThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyIn
+  
+  CWAlarmOut3:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn: MyKinesisStream
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameOut3
+      AlarmDescription: 'WriteProvisionedThroughputExceeded exceeds threshold'
+      MetricName: 'WriteProvisionedThroughputExceeded'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref MyKinesisStream
+      Statistic: 'Sum'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyOut
 
 
 Outputs:
