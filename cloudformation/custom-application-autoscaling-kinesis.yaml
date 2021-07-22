@@ -20,7 +20,7 @@ Parameters:
   ShardCount:
     Type: String
     Description: Number of initial shards
-    Default: 2
+    Default: 1
   LambdaFunctionName:
     Type: String
     Description: Name for the lambda function that will be created
