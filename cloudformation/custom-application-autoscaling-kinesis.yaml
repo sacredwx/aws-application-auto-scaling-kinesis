@@ -280,7 +280,6 @@ Resources:
 #added
   CWAlarmOut:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut
       AlarmDescription: 'incomingRecord exceeds threshold'
@@ -300,7 +299,6 @@ Resources:
 
   CWAlarmIn:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn
       AlarmDescription: 'incomingRecord below threshold'
@@ -320,7 +318,6 @@ Resources:
   
   CWAlarmOut2:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut2
       AlarmDescription: 'IncomingBytes exceeds threshold'
@@ -340,7 +337,6 @@ Resources:
 
   CWAlarmIn2:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn2
       AlarmDescription: 'IncomingBytes below threshold'
@@ -360,7 +356,6 @@ Resources:
   
   CWAlarmOut3:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut3
       AlarmDescription: 'WriteProvisionedThroughputExceeded exceeds threshold'
