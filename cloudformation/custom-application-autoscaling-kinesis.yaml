@@ -259,7 +259,6 @@ Resources:
 #added
   CWAlarmOut:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut
       AlarmDescription: 'incomingRecord exceeds threshold'
@@ -279,7 +278,6 @@ Resources:
 
   CWAlarmIn:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn
       AlarmDescription: 'incomingRecord below threshold'
@@ -296,6 +294,63 @@ Resources:
       ComparisonOperator: 'LessThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyIn
+  
+  CWAlarmOut2:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameOut2
+      AlarmDescription: 'IncomingBytes exceeds threshold'
+      MetricName: 'IncomingBytes'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref KinesisStreamName
+      Statistic: 'Sum'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1000000
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyOut
+
+  CWAlarmIn2:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameIn2
+      AlarmDescription: 'IncomingBytes below threshold'
+      MetricName: 'IncomingBytes'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref KinesisStreamName
+      Statistic: 'Sum'
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 700000
+      ComparisonOperator: 'LessThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyIn
+  
+  CWAlarmOut3:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Ref CloudWatchAlarmNameOut3
+      AlarmDescription: 'WriteProvisionedThroughputExceeded exceeds threshold'
+      MetricName: 'WriteProvisionedThroughputExceeded'
+      Namespace: 'AWS/Kinesis'
+      Dimensions:
+        -
+          Name: StreamName
+          Value: !Ref KinesisStreamName
+      Statistic: 'Sum'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - !Ref AutoScalingPolicyOut
 
 
 Outputs:
