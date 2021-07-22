@@ -7,7 +7,7 @@ Parameters:
   S3BucketLambda:
     Type: String
     Description: The S3 bucket location where the lambda deployment package is
-    Default: kinesisblog
+    Default: kinesis-autoscaling-bucket
   #added
   CloudWatchAlarmNameOut:
     Type: String
@@ -17,6 +17,13 @@ Parameters:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale in
     Default: IncomingRecords-alarm-in
+  KinesisStreamName:
+    Type: String
+    Description: Existing kinesis stream name
+    Default: KinesisAutoScalingStream
+  KinesisStreamArn:
+    Type: String
+    Description: Existing kinesis stream ARN
   ShardCount:
     Type: String
     Description: Number of initial shards
@@ -98,7 +105,7 @@ Resources:
               Action:
                 - kinesis:Describe*
                 - kinesis:UpdateShardCount
-              Resource: !GetAtt MyKinesisStream.Arn
+              Resource: !Ref KinesisStreamArn
             - Sid: CFNDescribe
               Effect: Allow
               Action:
@@ -192,12 +199,7 @@ Resources:
                   type: aws_proxy
                   uri:
                     Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaScaler.Arn}/invocations
-                responses: {} 
-
-  MyKinesisStream:
-    Type: AWS::Kinesis::Stream
-    Properties: 
-      ShardCount: !Ref ShardCount
+                responses: {}
 
   KinesisDesiredCapacityParameter:
     Type: "AWS::SSM::Parameter"
@@ -214,7 +216,7 @@ Resources:
     Properties:
       MaxCapacity: 8
       MinCapacity: 1
-      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${MyKinesisStream}
+      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${KinesisStreamName}
       RoleARN: !Sub ${CustomApplicationAutoScalingServiceRole.Arn}
       ScalableDimension: 'custom-resource:ResourceType:Property'
       ServiceNamespace: custom-resource
@@ -225,7 +227,7 @@ Resources:
     Properties: 
       PolicyName: KinesisScaleOut
       PolicyType: StepScaling
-      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${MyKinesisStream}      
+      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${KinesisStreamName}      
       ScalableDimension: "custom-resource:ResourceType:Property"
       ServiceNamespace: custom-resource
       StepScalingPolicyConfiguration: 
@@ -243,7 +245,7 @@ Resources:
     Properties: 
       PolicyName: KinesisScaleIn
       PolicyType: StepScaling
-      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${MyKinesisStream}      
+      ResourceId: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${KinesisStreamName}      
       ScalableDimension: "custom-resource:ResourceType:Property"
       ServiceNamespace: custom-resource
       StepScalingPolicyConfiguration: 
@@ -257,7 +259,7 @@ Resources:
 #added
   CWAlarmOut:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: MyKinesisStream
+    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut
       AlarmDescription: 'incomingRecord exceeds threshold'
@@ -266,7 +268,7 @@ Resources:
       Dimensions:
         -
           Name: StreamName
-          Value: !Ref MyKinesisStream
+          Value: !Ref KinesisStreamName
       Statistic: 'Sum'
       Period: 60
       EvaluationPeriods: 1
@@ -277,7 +279,7 @@ Resources:
 
   CWAlarmIn:
     Type: AWS::CloudWatch::Alarm
-    DependsOn: MyKinesisStream
+    DependsOn: KinesisStreamName
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn
       AlarmDescription: 'incomingRecord below threshold'
@@ -286,7 +288,7 @@ Resources:
       Dimensions:
         -
           Name: StreamName
-          Value: !Ref MyKinesisStream
+          Value: !Ref KinesisStreamName
       Statistic: 'Sum'
       Period: 300
       EvaluationPeriods: 3
@@ -299,4 +301,4 @@ Resources:
 Outputs:
   URL:
     Description: the URL
-    Value: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${MyKinesisStream}
+    Value: !Sub https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/scalableTargetDimensions/${KinesisStreamName}
