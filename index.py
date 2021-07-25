@@ -87,7 +87,26 @@ def update_alarm_out(shards, stream):
                 AUTOSCALINGPOLICYOUT_ARN
             ]
         )
-        # WriteProvisionedThroughputExceeded does not need a threshold update
+        client_cloudwatch.put_metric_alarm(
+            AlarmName=CLOUDWATCHALARMNAMEOUT3,
+            AlarmDescription='WriteProvisionedThroughputExceeded exceeds threshold',
+            MetricName='WriteProvisionedThroughputExceeded',
+            Namespace='AWS/Kinesis',
+            Dimensions=[
+                {
+                    'Name': 'StreamName',
+                    'Value': stream
+                }
+            ],
+            Statistic='Sum',
+            Period=60,
+            EvaluationPeriods=1,
+            Threshold=0, # WriteProvisionedThroughputExceeded has a constant threshold
+            ComparisonOperator='GreaterThanThreshold',
+            AlarmActions=[
+                AUTOSCALINGPOLICYOUT_ARN
+            ]
+        )
     except Exception as e:
         print(e)
 
