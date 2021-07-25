@@ -288,9 +288,9 @@ Resources:
           Name: StreamName
           Value: !Ref KinesisStreamName
       Statistic: 'Sum'
-      Period: 0
+      Period: 300
       EvaluationPeriods: 3
-      Threshold: 700
+      Threshold: 0
       ComparisonOperator: 'LessThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyIn
