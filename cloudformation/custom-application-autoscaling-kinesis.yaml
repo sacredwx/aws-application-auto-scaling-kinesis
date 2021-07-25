@@ -155,9 +155,9 @@ Resources:
           ParameterStore: !Ref KinesisDesiredCapacityParameter
           CloudWatchAlarmNameIn: !Ref CloudWatchAlarmNameIn
           CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut
-          CloudWatchAlarmNameIn: !Ref CloudWatchAlarmNameIn2
-          CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut2
-          CloudWatchAlarmNameOut: !Ref CloudWatchAlarmNameOut3
+          CloudWatchAlarmNameIn2: !Ref CloudWatchAlarmNameIn2
+          CloudWatchAlarmNameOut2: !Ref CloudWatchAlarmNameOut2
+          CloudWatchAlarmNameOut3: !Ref CloudWatchAlarmNameOut3
       Events:
         KinesisAPI:
           Type: Api
