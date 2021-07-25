@@ -292,7 +292,7 @@ Resources:
       Statistic: 'Sum'
       Period: 60
       EvaluationPeriods: 1
-      Threshold: 1000
+      Threshold: 48000
       ComparisonOperator: 'GreaterThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyOut
@@ -309,7 +309,7 @@ Resources:
           Name: StreamName
           Value: !Ref KinesisStreamName
       Statistic: 'Sum'
-      Period: 300
+      Period: 0
       EvaluationPeriods: 3
       Threshold: 700
       ComparisonOperator: 'LessThanThreshold'
@@ -330,7 +330,7 @@ Resources:
       Statistic: 'Sum'
       Period: 60
       EvaluationPeriods: 1
-      Threshold: 1000000
+      Threshold: 48000000
       ComparisonOperator: 'GreaterThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyOut
@@ -349,7 +349,7 @@ Resources:
       Statistic: 'Sum'
       Period: 300
       EvaluationPeriods: 3
-      Threshold: 700000
+      Threshold: 0
       ComparisonOperator: 'LessThanThreshold'
       AlarmActions:
         - !Ref AutoScalingPolicyIn
