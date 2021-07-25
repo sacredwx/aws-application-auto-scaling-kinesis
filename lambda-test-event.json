@@ -1,0 +1,7 @@
+{
+  "httpMethod": "PATCH",
+  "body": "{\"desiredCapacity\": 1}",
+  "pathParameters": {
+      "scalableTargetDimensionId": "KAS-MyKinesisStream-hh54DZJWK4xt"
+  }
+}
