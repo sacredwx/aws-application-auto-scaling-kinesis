@@ -111,8 +111,6 @@ def update_alarm_out(shards, stream):
         print(e)
 
 # fuction to update scale in alarm threshol
-
-
 def update_alarm_in(shards, stream):
     try:
         client_cloudwatch.put_metric_alarm(
@@ -172,8 +170,6 @@ def response_function(status_code, response_body):
     return return_json
 
 # trick for updating environment variable with application autoscaling arn (need to update all the current variables)
-
-
 def autoscaling_policy_arn(context):
     print(context.function_name)
     function_name = context.function_name
@@ -248,12 +244,10 @@ def lambda_handler(event, context):
         return response_function(404, message)
 
     # try to retrive the desired capacity from ParameterStore
-
     response = client_ssm.get_parameter(
         Name=PARAMETER_STORE
     )
     print(response)
-
     if 'Parameter' in response:
         if 'Value' in response['Parameter']:
             desiredCapacity = response['Parameter']['Value']
@@ -268,7 +262,6 @@ def lambda_handler(event, context):
         scalingStatus = "Successful"
 
     if event['httpMethod'] == "PATCH":
-
         # Check whether autoscaling is calling to change the Desired Capacity
         if 'desiredCapacity' in event['body']:
             desiredCapacityBody = json.loads(event['body'])
@@ -307,7 +300,7 @@ def lambda_handler(event, context):
         "resourceName": resourceName,
         "scalableTargetDimensionId": resourceName,
         "scalingStatus": scalingStatus,
-        "version": "MyVersion"
+        "version": "0.1.0"
     }
 
     try:
