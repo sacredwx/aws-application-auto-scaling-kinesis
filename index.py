@@ -310,11 +310,11 @@ def lambda_handler(event, context):
                 AUTOSCALINGPOLICYIN_ARN = os.environ['AutoScalingPolicyIn']
 
                 scalingStatus = update_shards(
-                    desiredCapacity, resourceName, desiredCapacity > actualCapacity)
+                    desiredCapacity, resourceName, float(desiredCapacity) > float(actualCapacity))
 
     if scalingStatus == "Successful" and float(desiredCapacity) != float(actualCapacity):
         scalingStatus = update_shards(
-            desiredCapacity, resourceName, desiredCapacity > actualCapacity)
+            desiredCapacity, resourceName, float(desiredCapacity) > float(actualCapacity))
 
     returningJson = {
         "actualCapacity": float(actualCapacity),
