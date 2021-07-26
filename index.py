@@ -18,7 +18,11 @@ CLOUDWATCHALARMNAMEIN2 = os.environ['CloudWatchAlarmNameIn2']
 CLOUDWATCHALARMNAMEOUT3 = os.environ['CloudWatchAlarmNameOut3']
 
 
-def update_shards(desiredCapacity, resourceName):
+def update_shards(desiredCapacity, resourceName, scaleOut: bool):
+    print("Action: "+"Scale-Out" if scaleOut else "Scale-In")
+
+    if scaleOut == False and all_metrics_can_scale_in() == False:
+        return "Denied"
 
     # Update the shard count to the new Desired Capacity value
     try:
@@ -101,7 +105,7 @@ def update_alarm_out(shards, stream):
             Statistic='Sum',
             Period=60,
             EvaluationPeriods=1,
-            Threshold=0, # WriteProvisionedThroughputExceeded has a constant threshold
+            Threshold=0,  # WriteProvisionedThroughputExceeded has a constant threshold
             ComparisonOperator='GreaterThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYOUT_ARN
@@ -111,6 +115,8 @@ def update_alarm_out(shards, stream):
         print(e)
 
 # fuction to update scale in alarm threshol
+
+
 def update_alarm_in(shards, stream):
     try:
         client_cloudwatch.put_metric_alarm(
@@ -157,6 +163,19 @@ def update_alarm_in(shards, stream):
         print(e)
 
 
+def all_metrics_can_scale_in():
+    response = client_cloudwatch.describe_alarms(
+        AlarmNames=[
+            CLOUDWATCHALARMNAMEIN,
+            CLOUDWATCHALARMNAMEIN2,
+        ]
+    )
+    for alarm in response['MetricAlarms']:
+        if alarm['StateValue'] == 'OK':
+            return False
+    return True
+
+
 def response_function(status_code, response_body):
     return_json = {
         'statusCode': status_code,
@@ -170,6 +189,8 @@ def response_function(status_code, response_body):
     return return_json
 
 # trick for updating environment variable with application autoscaling arn (need to update all the current variables)
+
+
 def autoscaling_policy_arn(context):
     print(context.function_name)
     function_name = context.function_name
@@ -288,10 +309,12 @@ def lambda_handler(event, context):
                 AUTOSCALINGPOLICYOUT_ARN = os.environ['AutoScalingPolicyOut']
                 AUTOSCALINGPOLICYIN_ARN = os.environ['AutoScalingPolicyIn']
 
-                scalingStatus = update_shards(desiredCapacity, resourceName)
+                scalingStatus = update_shards(
+                    desiredCapacity, resourceName, desiredCapacity > actualCapacity)
 
     if scalingStatus == "Successful" and float(desiredCapacity) != float(actualCapacity):
-        scalingStatus = update_shards(desiredCapacity, resourceName)
+        scalingStatus = update_shards(
+            desiredCapacity, resourceName, desiredCapacity > actualCapacity)
 
     returningJson = {
         "actualCapacity": float(actualCapacity),
