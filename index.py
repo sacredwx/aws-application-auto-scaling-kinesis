@@ -170,6 +170,7 @@ def all_metrics_can_scale_in():
             CLOUDWATCHALARMNAMEIN2,
         ]
     )
+    print(response)
     for alarm in response['MetricAlarms']:
         if alarm['StateValue'] == 'OK':
             return False
