@@ -141,6 +141,7 @@ Resources:
             - Sid: CloudWatch
               Effect: Allow
               Action:
+                -   cloudwatch:DescribeAlarms
                 -   cloudwatch:PutMetricAlarm
                 -   cloudwatch:DeleteAlarms
               Resource: 
