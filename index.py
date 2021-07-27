@@ -19,7 +19,7 @@ CLOUDWATCHALARMNAMEOUT3 = os.environ['CloudWatchAlarmNameOut3']
 
 
 def update_shards(desiredCapacity, resourceName, scaleOut: bool):
-    print("Action: "+("Scale-Out" if scaleOut else "Scale-In")+" to "+desiredCapacity)
+    print("Action: "+("Scale-Out" if scaleOut else "Scale-In")+" to "+str(desiredCapacity))
 
     if scaleOut == False and all_metrics_can_scale_in() == False:
         print("Scale-In Denied")
