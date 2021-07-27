@@ -260,56 +260,56 @@ Resources:
   CWAlarmOut:
     Type: AWS::CloudWatch::Alarm
     Properties:
-    AlarmName: !Ref CloudWatchAlarmNameOut
-    ActionsEnabled: true
-    OKActions: []
-    AlarmActions:
-      - !Ref AutoScalingPolicyOut
-    InsufficientDataActions: []
-    Dimensions: []
-    EvaluationPeriods: 1
-    DatapointsToAlarm: 1
-    Threshold: 0
-    ComparisonOperator: GreaterThanThreshold
-    TreatMissingData: missing
-    Metrics:
-        - Id: e1
-          Label: Should-Scale-Out
-          ReturnData: true
-          Expression: IF(m1>48000000 OR m2>48000 OR m3>0, 1, 0)
-        - Id: m1
-          ReturnData: false
-          MetricStat:
-              Metric:
-                  Namespace: AWS/Kinesis
-                  MetricName: IncomingBytes
-                  Dimensions:
-                      - Name: StreamName
-                        Value: !Ref KinesisStreamName
-              Period: 60
-              Stat: Sum
-        - Id: m2
-          ReturnData: false
-          MetricStat:
-              Metric:
-                  Namespace: AWS/Kinesis
-                  MetricName: IncomingRecords
-                  Dimensions:
-                      - Name: StreamName
-                        Value: !Ref KinesisStreamName
-              Period: 60
-              Stat: Sum
-        - Id: m3
-          ReturnData: false
-          MetricStat:
-              Metric:
-                  Namespace: AWS/Kinesis
-                  MetricName: WriteProvisionedThroughputExceeded
-                  Dimensions:
-                      - Name: StreamName
-                        Value: !Ref KinesisStreamName
-              Period: 60
-              Stat: Sum
+      AlarmName: !Ref CloudWatchAlarmNameOut
+      ActionsEnabled: true
+      OKActions: []
+      AlarmActions:
+        - !Ref AutoScalingPolicyOut
+      InsufficientDataActions: []
+      Dimensions: []
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: missing
+      Metrics:
+          - Id: e1
+            Label: Should-Scale-Out
+            ReturnData: true
+            Expression: IF(m1>48000000 OR m2>48000 OR m3>0, 1, 0)
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: IncomingBytes
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 60
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: IncomingRecords
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 60
+                Stat: Sum
+          - Id: m3
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: WriteProvisionedThroughputExceeded
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 60
+                Stat: Sum
 
   CWAlarmIn:
     Type: AWS::CloudWatch::Alarm
