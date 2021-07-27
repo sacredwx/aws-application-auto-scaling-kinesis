@@ -12,11 +12,15 @@ Parameters:
   CloudWatchAlarmNameOut:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale out
-    Default: IncomingRecords-alarm-out
+    Default: KinesisAutoScaling-alarm-scale-in
   CloudWatchAlarmNameIn:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale in
-    Default: IncomingRecords-alarm-in
+    Default: KinesisAutoScaling-alarm-scale-out
+  LambdaFunctionName:
+    Type: String
+    Description: Name for the lambda function that will be created
+    Default: KinesisAutoScaling-Lambda-Scaler
   KinesisStreamName:
     Type: String
     Description: Existing kinesis stream name
@@ -27,11 +31,7 @@ Parameters:
   ShardCount:
     Type: String
     Description: Number of initial shards
-    Default: 2
-  LambdaFunctionName:
-    Type: String
-    Description: Name for the lambda function that will be created
-    Default: Kinesis-Autoscale-Lambda-Scaler
+    Default: 1
 
 
 
@@ -256,101 +256,103 @@ Resources:
          - MetricIntervalUpperBound: 0
            ScalingAdjustment: -1
 
-#added
+  #added
   CWAlarmOut:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Ref CloudWatchAlarmNameOut
-      AlarmDescription: 'incomingRecord exceeds threshold'
-      MetricName: 'IncomingRecords'
-      Namespace: 'AWS/Kinesis'
-      Dimensions:
-        -
-          Name: StreamName
-          Value: !Ref KinesisStreamName
-      Statistic: 'Sum'
-      Period: 60
-      EvaluationPeriods: 1
-      Threshold: 48000
-      ComparisonOperator: 'GreaterThanThreshold'
-      AlarmActions:
-        - !Ref AutoScalingPolicyOut
+    AlarmName: !Ref CloudWatchAlarmNameOut
+    ActionsEnabled: true
+    OKActions: []
+    AlarmActions:
+      - !Ref AutoScalingPolicyOut
+    InsufficientDataActions: []
+    Dimensions: []
+    EvaluationPeriods: 1
+    DatapointsToAlarm: 1
+    Threshold: 0
+    ComparisonOperator: GreaterThanThreshold
+    TreatMissingData: missing
+    Metrics:
+        - Id: e1
+          Label: Should-Scale-Out
+          ReturnData: true
+          Expression: IF(m1>48000000 OR m2>48000 OR m3>0, 1, 0)
+        - Id: m1
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Kinesis
+                  MetricName: IncomingBytes
+                  Dimensions:
+                      - Name: StreamName
+                        Value: !Ref KinesisStreamName
+              Period: 60
+              Stat: Sum
+        - Id: m2
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Kinesis
+                  MetricName: IncomingRecords
+                  Dimensions:
+                      - Name: StreamName
+                        Value: !Ref KinesisStreamName
+              Period: 60
+              Stat: Sum
+        - Id: m3
+          ReturnData: false
+          MetricStat:
+              Metric:
+                  Namespace: AWS/Kinesis
+                  MetricName: WriteProvisionedThroughputExceeded
+                  Dimensions:
+                      - Name: StreamName
+                        Value: !Ref KinesisStreamName
+              Period: 60
+              Stat: Sum
 
   CWAlarmIn:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn
-      AlarmDescription: 'incomingRecord below threshold'
-      MetricName: 'IncomingRecords'
-      Namespace: 'AWS/Kinesis'
-      Dimensions:
-        -
-          Name: StreamName
-          Value: !Ref KinesisStreamName
-      Statistic: 'Sum'
-      Period: 300
-      EvaluationPeriods: 3
-      Threshold: 0
-      ComparisonOperator: 'LessThanThreshold'
+      ActionsEnabled: true
+      OKActions: []
       AlarmActions:
         - !Ref AutoScalingPolicyIn
-  
-  CWAlarmOut2:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Ref CloudWatchAlarmNameOut2
-      AlarmDescription: 'IncomingBytes exceeds threshold'
-      MetricName: 'IncomingBytes'
-      Namespace: 'AWS/Kinesis'
-      Dimensions:
-        -
-          Name: StreamName
-          Value: !Ref KinesisStreamName
-      Statistic: 'Sum'
-      Period: 60
-      EvaluationPeriods: 1
-      Threshold: 48000000
-      ComparisonOperator: 'GreaterThanThreshold'
-      AlarmActions:
-        - !Ref AutoScalingPolicyOut
-
-  CWAlarmIn2:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Ref CloudWatchAlarmNameIn2
-      AlarmDescription: 'IncomingBytes below threshold'
-      MetricName: 'IncomingBytes'
-      Namespace: 'AWS/Kinesis'
-      Dimensions:
-        -
-          Name: StreamName
-          Value: !Ref KinesisStreamName
-      Statistic: 'Sum'
-      Period: 300
+      InsufficientDataActions: []
+      Dimensions: []
       EvaluationPeriods: 3
+      DatapointsToAlarm: 3
       Threshold: 0
-      ComparisonOperator: 'LessThanThreshold'
-      AlarmActions:
-        - !Ref AutoScalingPolicyIn
-  
-  CWAlarmOut3:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Ref CloudWatchAlarmNameOut3
-      AlarmDescription: 'WriteProvisionedThroughputExceeded exceeds threshold'
-      MetricName: 'WriteProvisionedThroughputExceeded'
-      Namespace: 'AWS/Kinesis'
-      Dimensions:
-        -
-          Name: StreamName
-          Value: !Ref KinesisStreamName
-      Statistic: 'Sum'
-      Period: 60
-      EvaluationPeriods: 1
-      Threshold: 0
-      ComparisonOperator: 'GreaterThanThreshold'
-      AlarmActions:
-        - !Ref AutoScalingPolicyOut
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: missing
+      Metrics:
+          - Id: e1
+            Label: Can Scale-In
+            ReturnData: true
+            Expression: IF(m1<48000000 AND m2<48000, 1, 0)
+          - Id: m1
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: IncomingBytes
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 300
+                Stat: Sum
+          - Id: m2
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: IncomingRecords
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 300
+                Stat: Sum
 
 
 Outputs:
