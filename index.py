@@ -66,7 +66,7 @@ def update_alarm_out(shards, stream):
             Statistic='Sum',
             Period=60,
             EvaluationPeriods=1,
-            Threshold=(1000 * shards * 60)*80/100,
+            Threshold=(1000 * int(shards) * 60)*80/100,
             ComparisonOperator='GreaterThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYOUT_ARN
@@ -86,7 +86,7 @@ def update_alarm_out(shards, stream):
             Statistic='Sum',
             Period=60,
             EvaluationPeriods=1,
-            Threshold=(1000000 * shards * 60)*80/100,
+            Threshold=(1000000 * int(shards) * 60)*80/100,
             ComparisonOperator='GreaterThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYOUT_ARN
@@ -134,7 +134,7 @@ def update_alarm_in(shards, stream):
             Statistic='Sum',
             Period=300,
             EvaluationPeriods=3,
-            Threshold=(1000 * (shards-1) * 60)*80/100,
+            Threshold=(1000 * (int(shards)-1) * 60)*80/100,
             ComparisonOperator='LessThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYIN_ARN
@@ -154,7 +154,7 @@ def update_alarm_in(shards, stream):
             Statistic='Sum',
             Period=300,
             EvaluationPeriods=3,
-            Threshold=(1000000 * (shards-1) * 60)*80/100,
+            Threshold=(1000000 * (int(shards)-1) * 60)*80/100,
             ComparisonOperator='LessThanThreshold',
             AlarmActions=[
                 AUTOSCALINGPOLICYIN_ARN
