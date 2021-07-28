@@ -12,11 +12,11 @@ Parameters:
   CloudWatchAlarmNameOut:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale out
-    Default: KinesisAutoScaling-alarm-scale-in
+    Default: KinesisAutoScaling-alarm-scale-out
   CloudWatchAlarmNameIn:
     Type: String
     Description: Alarm name for CloudWatch Alarm scale in
-    Default: KinesisAutoScaling-alarm-scale-out
+    Default: KinesisAutoScaling-alarm-scale-in
   LambdaFunctionName:
     Type: String
     Description: Name for the lambda function that will be created
@@ -262,11 +262,8 @@ Resources:
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameOut
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
         - !Ref AutoScalingPolicyOut
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 0
@@ -316,11 +313,8 @@ Resources:
     Properties:
       AlarmName: !Ref CloudWatchAlarmNameIn
       ActionsEnabled: true
-      OKActions: []
       AlarmActions:
         - !Ref AutoScalingPolicyIn
-      InsufficientDataActions: []
-      Dimensions: []
       EvaluationPeriods: 3
       DatapointsToAlarm: 3
       Threshold: 0
