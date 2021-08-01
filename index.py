@@ -115,7 +115,7 @@ def update_alarm_out(shards, stream):
     except Exception as e:
         print(e)
 
-# fuction to update scale in alarm threshol
+# fuction to update scale in alarm threshold
 
 
 def update_alarm_in(shards, stream):
@@ -130,8 +130,8 @@ def update_alarm_in(shards, stream):
             AlarmActions=[
         AUTOSCALINGPOLICYIN_ARN
     ],
-            EvaluationPeriods=3,
-            DatapointsToAlarm=3,
+            EvaluationPeriods=15,
+            DatapointsToAlarm=15,
             Threshold=0,
             ComparisonOperator='GreaterThanThreshold',
             TreatMissingData='missing',
@@ -152,7 +152,7 @@ def update_alarm_in(shards, stream):
                     'Value': stream,
                 }],
             },
-            'Period': 300,
+            'Period': 60,
             'Stat': 'Sum',
         }
     }, {
@@ -167,7 +167,7 @@ def update_alarm_in(shards, stream):
                     'Value': stream,
                 }]
             },
-            'Period': 300,
+            'Period': 60,
             'Stat': 'Sum',
         }
     }]

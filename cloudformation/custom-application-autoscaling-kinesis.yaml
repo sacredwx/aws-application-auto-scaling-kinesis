@@ -315,8 +315,8 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Ref AutoScalingPolicyIn
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: missing
@@ -334,7 +334,7 @@ Resources:
                     Dimensions:
                         - Name: StreamName
                           Value: !Ref KinesisStreamName
-                Period: 300
+                Period: 60
                 Stat: Sum
           - Id: m2
             ReturnData: false
@@ -345,7 +345,7 @@ Resources:
                     Dimensions:
                         - Name: StreamName
                           Value: !Ref KinesisStreamName
-                Period: 300
+                Period: 60
                 Stat: Sum
 
 
