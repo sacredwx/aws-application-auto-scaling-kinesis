@@ -324,7 +324,7 @@ Resources:
           - Id: e1
             Label: Can Scale-In
             ReturnData: true
-            Expression: IF(m1<48000000 AND m2<48000, 1, 0)
+            Expression: IF(m1<48000000 AND m2<48000 AND m3==0, 1, 0)
           - Id: m1
             ReturnData: false
             MetricStat:
@@ -342,6 +342,17 @@ Resources:
                 Metric:
                     Namespace: AWS/Kinesis
                     MetricName: IncomingRecords
+                    Dimensions:
+                        - Name: StreamName
+                          Value: !Ref KinesisStreamName
+                Period: 60
+                Stat: Sum
+          - Id: m3
+            ReturnData: false
+            MetricStat:
+                Metric:
+                    Namespace: AWS/Kinesis
+                    MetricName: WriteProvisionedThroughputExceeded
                     Dimensions:
                         - Name: StreamName
                           Value: !Ref KinesisStreamName
